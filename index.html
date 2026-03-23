@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>饮食营养记录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .input-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .input-title {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-title::before {
+            content: '🎤';
+        }
+
+        .input-methods {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .voice-input {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .voice-input:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .voice-input.recording {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .voice-input span {
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .voice-input small {
+            opacity: 0.9;
+        }
+
+        .text-input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .text-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .add-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .add-btn:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+
+        .transcription {
+            margin-top: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            min-height: 50px;
+            color: #555;
+        }
+
+        .transcription.has-content {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .stats-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .stats-title {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-title::before {
+            content: '📊';
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            color: white;
+        }
+
+        .stat-card.calories { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .stat-card.protein { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .stat-card.fat { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .stat-card.carbs { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+        }
+
+        .stat-unit {
+            font-size: 0.85em;
+            opacity: 0.8;
+        }
+
+        .table-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .table-title {
+            font-size: 1.3em;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .table-title::before {
+            content: '📋';
+        }
+
+        .clear-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .clear-btn:hover {
+            background: #ff3838;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #555;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state::before {
+            content: '🍽️';
+            display: block;
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .delete-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #ff3838;
+        }
+
+        @media (max-width: 768px) {
+            .input-methods {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            table {
+                font-size: 0.9em;
+            }
+
+            th, td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>饮食营养记录</h1>
+            <p>说出你吃了什么,自动计算营养成分</p>
+        </div>
+
+        <div class="input-section">
+            <div class="input-title">输入方式</div>
+            <div class="input-methods">
+                <button class="voice-input" id="voiceBtn">
+                    <span>点击开始录音</span>
+                    <small>说出你吃了什么</small>
+                </button>
+                <div class="text-input-container">
+                    <input type="text" class="text-input" id="textInput" placeholder="或者直接输入食物名称...">
+                    <button class="add-btn" id="addBtn">添加</button>
+                </div>
+            </div>
+            <div class="transcription" id="transcription">语音识别结果将显示在这里...</div>
+        </div>
+
+        <div class="stats-section">
+            <div class="stats-title">今日摄入统计</div>
+            <div class="stats-grid">
+                <div class="stat-card calories">
+                    <div class="stat-label">热量</div>
+                    <div class="stat-value" id="totalCalories">0</div>
+                    <div class="stat-unit">千卡</div>
+                </div>
+                <div class="stat-card protein">
+                    <div class="stat-label">蛋白质</div>
+                    <div class="stat-value" id="totalProtein">0</div>
+                    <div class="stat-unit">克</div>
+                </div>
+                <div class="stat-card fat">
+                    <div class="stat-label">脂肪</div>
+                    <div class="stat-value" id="totalFat">0</div>
+                    <div class="stat-unit">克</div>
+                </div>
+                <div class="stat-card carbs">
+                    <div class="stat-label">碳水化合物</div>
+                    <div class="stat-value" id="totalCarbs">0</div>
+                    <div class="stat-unit">克</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-section">
+            <div class="table-header">
+                <div class="table-title">饮食记录</div>
+                <button class="clear-btn" id="clearBtn">清空记录</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>食物</th>
+                        <th>热量 (千卡)</th>
+                        <th>蛋白质 (克)</th>
+                        <th>脂肪 (克)</th>
+                        <th>碳水化合物 (克)</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="foodTableBody">
+                </tbody>
+            </table>
+            <div class="empty-state" id="emptyState">
+                暂无记录,开始添加吧!
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
